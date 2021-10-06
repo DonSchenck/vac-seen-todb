@@ -25,53 +25,57 @@ namespace vac_seen_todb
         static async void write_events()
         {
             //DocumentStore docstore = DocumentStore.For("Host=localhost;Username=postgres;Password=7f986df431344327b52471df0142e520;");
-            DocumentStore docstore = DocumentStore.For(Environment.GetEnvironmentVariable("ConnectionString"));
-            //using (var session = docstore.LightweightSession())
-            //{
-            //    VaccinationEvent ve = new VaccinationEvent();
-            //    ve.ShotNumber = 3;
-            //    ve.CountryCode = "us";
-            //    ve.VaccinationType = "TEST";
-            //    // Write to database
-            //    session.Store(ve);
-            //    await session.SaveChangesAsync();
-            //}
+            try {
+                DocumentStore docstore = DocumentStore.For(Environment.GetEnvironmentVariable("ConnectionString"));
+                //using (var session = docstore.LightweightSession())
+                //{
+                //    VaccinationEvent ve = new VaccinationEvent();
+                //    ve.ShotNumber = 3;
+                //    ve.CountryCode = "us";
+                //    ve.VaccinationType = "TEST";
+                //    // Write to database
+                //    session.Store(ve);
+                //    await session.SaveChangesAsync();
+                //}
 
-            Dictionary<string, string> bindingsKVP = GetDotnetServiceBindings();
-            bool cancelled = false;
-            CancellationTokenSource source = new CancellationTokenSource();
-            CancellationToken token = source.Token;
-            var config = new ConsumerConfig
-            {
-                BootstrapServers = bindingsKVP["bootstrapservers"],
-                GroupId = "foo",
-                AutoOffsetReset = AutoOffsetReset.Earliest,
-                SecurityProtocol = ToSecurityProtocol(bindingsKVP["securityProtocol"]),
-                SaslMechanism = SaslMechanism.Plain,
-                SaslUsername = bindingsKVP["user"],
-                SaslPassword = bindingsKVP["password"],
-            };
-
-            using (var consumer = new ConsumerBuilder<Ignore, string>(config).Build())
-            {
-                consumer.Subscribe("us");
-                int vaxcount = 0;
-                while (!cancelled)
+                Dictionary<string, string> bindingsKVP = GetDotnetServiceBindings();
+                bool cancelled = false;
+                CancellationTokenSource source = new CancellationTokenSource();
+                CancellationToken token = source.Token;
+                var config = new ConsumerConfig
                 {
-                    var consumeResult = consumer.Consume(token);
-                    Console.WriteLine("Message number {0}", vaxcount);
+                    BootstrapServers = bindingsKVP["bootstrapservers"],
+                    GroupId = "foo",
+                    AutoOffsetReset = AutoOffsetReset.Earliest,
+                    SecurityProtocol = ToSecurityProtocol(bindingsKVP["securityProtocol"]),
+                    SaslMechanism = SaslMechanism.Plain,
+                    SaslUsername = bindingsKVP["user"],
+                    SaslPassword = bindingsKVP["password"],
+                };
 
-                    VaccinationEvent ve = JsonConvert.DeserializeObject<VaccinationEvent>(consumeResult.Message.Value);
-                    using (var session = docstore.LightweightSession())
+                using (var consumer = new ConsumerBuilder<Ignore, string>(config).Build())
+                {
+                    consumer.Subscribe("us");
+                    int vaxcount = 0;
+                    while (!cancelled)
                     {
-                        // Write to database
-                        session.Store(ve);
-                        await session.SaveChangesAsync();
-                    }
+                        var consumeResult = consumer.Consume(token);
+                        Console.WriteLine("Message number {0}", vaxcount);
 
-                    vaxcount++;
+                        VaccinationEvent ve = JsonConvert.DeserializeObject<VaccinationEvent>(consumeResult.Message.Value);
+                        using (var session = docstore.LightweightSession())
+                        {
+                            // Write to database
+                            session.Store(ve);
+                            await session.SaveChangesAsync();
+                        }
+
+                        vaxcount++;
+                    }
+                    consumer.Close();
                 }
-                consumer.Close();
+            } catch(Exception e) {
+                Console.WriteLine(e.Message);
             }
         }
 
