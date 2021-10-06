@@ -67,7 +67,7 @@ namespace vac_seen_todb
                         {
                             // Write to database
                             session.Store(ve);
-                            await session.SaveChanges();
+                            session.SaveChanges();
                         }
 
                         vaxcount++;
