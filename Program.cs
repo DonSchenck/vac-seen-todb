@@ -45,8 +45,8 @@ namespace vac_seen_todb
                 var config = new ConsumerConfig
                 {
                     BootstrapServers = bindingsKVP["bootstrapservers"],
-                    GroupId = "foo",
-                    AutoOffsetReset = AutoOffsetReset.Earliest,
+                    GroupId = "vax",
+                    AutoOffsetReset = AutoOffsetReset.Latest,
                     SecurityProtocol = ToSecurityProtocol(bindingsKVP["securityProtocol"]),
                     SaslMechanism = SaslMechanism.Plain,
                     SaslUsername = bindingsKVP["user"],
