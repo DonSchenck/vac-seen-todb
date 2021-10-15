@@ -60,9 +60,9 @@ namespace vac_seen_todb
                     while (!cancelled)
                     {
                         var consumeResult = consumer.Consume(token);
-                        Console.WriteLine("Message number {0}", vaxcount);
 
                         VaccinationEvent ve = JsonConvert.DeserializeObject<VaccinationEvent>(consumeResult.Message.Value);
+                        Console.WriteLine("Message offset: {0}", consumeResult.Offset);
                         using (var session = docstore.LightweightSession())
                         {
                             // Write to database
