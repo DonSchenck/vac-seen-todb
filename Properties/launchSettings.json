@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "vac-seen-todb": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

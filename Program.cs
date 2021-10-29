@@ -24,19 +24,11 @@ namespace vac_seen_todb
 
         static async void write_events()
         {
-            //DocumentStore docstore = DocumentStore.For("Host=localhost;Username=postgres;Password=7f986df431344327b52471df0142e520;");
+            //DocumentStore docstore = DocumentStore.For("Host=postgresql;Username=postgres;Password=7f986df431344327b52471df0142e520;");
             try {
-                DocumentStore docstore = DocumentStore.For(Environment.GetEnvironmentVariable("ConnectionString"));
-                //using (var session = docstore.LightweightSession())
-                //{
-                //    VaccinationEvent ve = new VaccinationEvent();
-                //    ve.ShotNumber = 3;
-                //    ve.CountryCode = "us";
-                //    ve.VaccinationType = "TEST";
-                //    // Write to database
-                //    session.Store(ve);
-                //    await session.SaveChangesAsync();
-                //}
+
+                Console.WriteLine("Beginning to write Vaccination Events to permanent data store...");
+                DocumentStore docstore = DocumentStore.For(Environment.GetEnvironmentVariable("CONNECTION_STRING"));
 
                 Dictionary<string, string> bindingsKVP = GetDotnetServiceBindings();
                 bool cancelled = false;
@@ -45,7 +37,7 @@ namespace vac_seen_todb
                 var config = new ConsumerConfig
                 {
                     BootstrapServers = bindingsKVP["bootstrapservers"],
-                    GroupId = "vax",
+                    GroupId = "todb",
                     AutoOffsetReset = AutoOffsetReset.Latest,
                     SecurityProtocol = ToSecurityProtocol(bindingsKVP["securityProtocol"]),
                     SaslMechanism = SaslMechanism.Plain,
@@ -62,7 +54,7 @@ namespace vac_seen_todb
                         var consumeResult = consumer.Consume(token);
 
                         VaccinationEvent ve = JsonConvert.DeserializeObject<VaccinationEvent>(consumeResult.Message.Value);
-                        Console.WriteLine("Message offset: {0}", consumeResult.Offset);
+                        DEBUGGING: Console.WriteLine("Message offset: {0}", consumeResult.Offset);
                         using (var session = docstore.LightweightSession())
                         {
                             // Write to database
@@ -73,6 +65,8 @@ namespace vac_seen_todb
                         vaxcount++;
                     }
                     consumer.Close();
+                    Console.WriteLine("FINISHED writing Vaccination Events to permanent data store.");
+
                 }
             } catch(Exception e) {
                 Console.WriteLine(e.Message);

@@ -1,0 +1,17 @@
+apiVersion: binding.operators.coreos.com/v1alpha1
+kind: ServiceBinding
+metadata:
+  name: vac-seen-todb
+  namespace: rhn-engineering-dschenck-dev
+spec:
+  application:
+    group: apps
+    name: vac-seen-todb
+    resource: jobs
+    version: v1
+  bindAsFiles: true
+  services:
+  - group: rhoas.redhat.com
+    name: vax
+    resource: kafkaconnections
+    version: v1alpha1
