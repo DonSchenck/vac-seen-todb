@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using KubeServiceBinding;
 using Marten;
 
 namespace vac_seen_todb
@@ -28,22 +27,37 @@ namespace vac_seen_todb
             try {
 
                 Console.WriteLine("Beginning to write Vaccination Events to permanent data store...");
-                DocumentStore docstore = DocumentStore.For(Environment.GetEnvironmentVariable("CONNECTION_STRING"));
+                DocumentStore docstore = DocumentStore.For(Environment.GetEnvironmentVariable("MARTEN_CONNECTION_STRING"));
 
-                Dictionary<string, string> bindingsKVP = GetDotnetServiceBindings();
                 bool cancelled = false;
                 CancellationTokenSource source = new CancellationTokenSource();
                 CancellationToken token = source.Token;
-                var config = new ConsumerConfig
-                {
-                    BootstrapServers = bindingsKVP["bootstrapservers"],
-                    GroupId = "todb",
-                    AutoOffsetReset = AutoOffsetReset.Latest,
-                    SecurityProtocol = ToSecurityProtocol(bindingsKVP["securityProtocol"]),
-                    SaslMechanism = SaslMechanism.Plain,
-                    SaslUsername = bindingsKVP["user"],
-                    SaslPassword = bindingsKVP["password"],
-                };
+
+                Console.WriteLine("config.BootstrapServers: {0}", Environment.GetEnvironmentVariable("BOOTSTRAPSERVERS"));
+                Console.WriteLine("SECURITY_PROTOCOL ENV: {0}", Environment.GetEnvironmentVariable("SECURITY_PROTOCOL"));
+                Console.WriteLine("SASL_MECHANICM ENV: {0}", Environment.GetEnvironmentVariable("SASL_MECHANISM"));
+                Console.WriteLine("config.SaslUsername: {0}", Environment.GetEnvironmentVariable("CLIENT_ID"));
+                Console.WriteLine("config.SaslPassword: {0}", Environment.GetEnvironmentVariable("CLIENT_SECRET"));
+
+
+                ConsumerConfig config = new ConsumerConfig();
+                config.GroupId = "todb";
+                config.AutoOffsetReset = AutoOffsetReset.Latest;
+                config.BootstrapServers = Environment.GetEnvironmentVariable("BOOTSTRAPSERVERS");
+                config.SecurityProtocol = ToSecurityProtocol(Environment.GetEnvironmentVariable("SECURITY_PROTOCOL"));
+                config.SaslMechanism = ToSaslMechanism(Environment.GetEnvironmentVariable("SASL_MECHANISM"));
+                config.SaslUsername = Environment.GetEnvironmentVariable("CLIENT_ID");
+                config.SaslPassword = Environment.GetEnvironmentVariable("CLIENT_SECRET");
+
+
+                Console.WriteLine("config.GroupId: {0}", config.GroupId);
+                Console.WriteLine("config.BootstrapServers: {0}", config.BootstrapServers);
+                Console.WriteLine("SASL_PROTOCOL ENV: {0}", Environment.GetEnvironmentVariable("SECURITY_PROTOCOL"));
+                Console.WriteLine("SASL_MECHANICM ENV: {0}", Environment.GetEnvironmentVariable("SASL_MECHANISM"));
+                Console.WriteLine("config.SaslUsername: {0}", config.SaslUsername);
+                Console.WriteLine("config.SaslPassword: {0}", config.SaslPassword);
+
+
 
                 using (var consumer = new ConsumerBuilder<Ignore, string>(config).Build())
                 {
@@ -54,7 +68,7 @@ namespace vac_seen_todb
                         var consumeResult = consumer.Consume(token);
 
                         VaccinationEvent ve = JsonConvert.DeserializeObject<VaccinationEvent>(consumeResult.Message.Value);
-                        DEBUGGING: Console.WriteLine("Message offset: {0}", consumeResult.Offset);
+                        Console.WriteLine("Message offset: {0}", consumeResult.Offset);
                         using (var session = docstore.LightweightSession())
                         {
                             // Write to database
@@ -70,29 +84,6 @@ namespace vac_seen_todb
                 }
             } catch(Exception e) {
                 Console.WriteLine(e.Message);
-            }
-        }
-
-        private static Dictionary<string, string> GetDotnetServiceBindings()
-        {
-            int count = 0;
-            int maxTries = 999;
-            while (true)
-            {
-                try
-                {
-                    DotnetServiceBinding sc = new DotnetServiceBinding();
-                    Dictionary<string, string> d = sc.GetBindings("kafka");
-                    return d;
-                    // At this point, we have the information needed to bind to our Kafka
-                    // bootstrap server.
-                }
-                catch (Exception e)
-                {
-                    // handle exception
-                    System.Threading.Thread.Sleep(1000);
-                    if (++count == maxTries) throw e;
-                }
             }
         }
         public static SecurityProtocol ToSecurityProtocol(string bindingValue) => bindingValue switch
