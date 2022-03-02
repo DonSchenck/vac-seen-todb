@@ -21,10 +21,11 @@ namespace vac_seen_todb
 
         }
 
-        static async void write_events()
+        static void write_events()
         {
             //DocumentStore docstore = DocumentStore.For("Host=postgresql;Username=postgres;Password=7f986df431344327b52471df0142e520;");
-            try {
+            try
+            {
 
                 Console.WriteLine("Beginning to write Vaccination Events to permanent data store...");
                 DocumentStore docstore = DocumentStore.For(Environment.GetEnvironmentVariable("MARTEN_CONNECTION_STRING"));
@@ -41,7 +42,7 @@ namespace vac_seen_todb
 
 
                 ConsumerConfig config = new ConsumerConfig();
-                config.GroupId = "todb";
+                config.GroupId = "ustodb";
                 config.AutoOffsetReset = AutoOffsetReset.Latest;
                 config.BootstrapServers = Environment.GetEnvironmentVariable("BOOTSTRAPSERVERS");
                 config.SecurityProtocol = ToSecurityProtocol(Environment.GetEnvironmentVariable("SECURITY_PROTOCOL"));
@@ -82,7 +83,9 @@ namespace vac_seen_todb
                     Console.WriteLine("FINISHED writing Vaccination Events to permanent data store.");
 
                 }
-            } catch(Exception e) {
+            }
+            catch (Exception e)
+            {
                 Console.WriteLine(e.Message);
             }
         }

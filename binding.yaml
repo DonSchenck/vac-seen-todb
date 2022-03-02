@@ -12,6 +12,6 @@ spec:
   bindAsFiles: true
   services:
   - group: rhoas.redhat.com
-    name: vax
+    name: vaccinations
     resource: kafkaconnections
     version: v1alpha1
