@@ -1,5 +1,9 @@
 # vac-seen-todb
-Subscribes to "Vaccination" events in Kafka and persists them to a PostGreSQL database using Marten
+Subscribes to "Vaccination" events in Kafka and persists them to a PostgreSQL database using Marten ([https://martendb.io/](https://martendb.io/)).
+
+This project requires that the Vaccination Event Generator project has first been implemented.  Here is a list of the prerequisites and/or requirements for this (vac-seen-todb) project: 
+
+## Prerequisites and Requirements  
 
 ## Create PostgreSQL instance
 
@@ -8,6 +12,9 @@ The first step is to create an instance of a PostgreSQL database. This database 
 I need to list the templates so I can find the PostgreSQL template that I need. It turns out to be "postgresql-persistent:
 
 `oc get templates --namespace=openshift | grep postgresql`  
+Or, if using PowerShell:  
+`oc get templates --namespace=openshift | Select-String postgresql`  
+
 
 ```console
 eap72-postgresql-persistent-s2i                     An example Red Hat JBoss EAP 7 application with a persistent PostgreSQL datab...   37 (16 blank)     11
