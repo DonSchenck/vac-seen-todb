@@ -64,21 +64,19 @@ namespace vac_seen_todb
                 {
                     consumer.Subscribe("us");
                     int vaxcount = 0;
-                    while (!cancelled)
-                    {
-                        var consumeResult = consumer.Consume(token);
-
-                        VaccinationEvent ve = JsonConvert.DeserializeObject<VaccinationEvent>(consumeResult.Message.Value);
-                        Console.WriteLine("Message offset: {0}", consumeResult.Offset);
-                        using (var session = docstore.LightweightSession())
+                        foreach (var msg in consumer.Consume())
                         {
-                            // Write to database
-                            session.Store(ve);
-                            session.SaveChanges();
+                            VaccinationEvent ve = JsonConvert.DeserializeObject<VaccinationEvent>(msg);
+                            Console.WriteLine("Message offset: {0}", msg.Offset);
+                            using (var session = docstore.LightweightSession())
+                            {
+                                // Write to database
+                                session.Store(ve);
+                                session.SaveChanges();
+                            }
+                            vaxcount++;
                         }
 
-                        vaxcount++;
-                    }
                     consumer.Close();
                     Console.WriteLine("FINISHED writing Vaccination Events to permanent data store.");
 
