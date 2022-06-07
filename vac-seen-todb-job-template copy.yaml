@@ -1,0 +1,66 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: vac-seen-todb-cronjob-template
+  annotations:
+    description: "Initiates the vac-seen-todb application"
+    iconClass: "icon-redis"
+    tags: "database,nosql,vac-seen"
+objects:
+- apiVersion: batch/v1
+  kind: CronJob
+  metadata:
+    name: vac-seen-todb-cronjob
+  spec:
+    schedule: "*/5 * * * *"
+    jobTemplate:
+      spec:
+        template:
+          metadata:
+            labels:
+              parent: vacseentodbcron
+          spec:
+            containers:
+              - name: vac-seen-todb
+                image: quay.io/donschenck/vacseentodb:v1
+                imagePullPolicy: Always
+                env:
+                  - name: MARTEN_CONNECTION_STRING
+                    valueFrom:
+                      secretKeyRef:
+                        name: vac-seen-todb-connection-string
+                        key: MARTEN_CONNECTION_STRING
+                  - name: CLIENT_ID
+                    valueFrom:
+                      secretKeyRef:
+                        name: "${SERVICE_ACCOUNT_SECRET_NAME}"
+                        key: client-id
+                  - name: CLIENT_SECRET
+                    valueFrom:
+                      secretKeyRef:
+                        name: "${SERVICE_ACCOUNT_SECRET_NAME}"
+                        key: client-secret
+                  - name: BOOTSTRAPSERVERS
+                    value:  "${BOOTSTRAPSERVERS}"
+                  - name: SASL_MECHANISM
+                    value: "${SASL_MECHANISM}"
+                  - name: SECURITY_PROTOCOL
+                    value: "${SECURITY_PROTOCOL}"
+            restartPolicy: OnFailure
+parameters:
+  - name: SERVICE_ACCOUNT_SECRET_NAME 
+    displayName: Service Account Secret Name 
+    description: The name of the Red Hat Services Service Account Secret; probably rh-services-service-account
+    required: true 
+  - name: BOOTSTRAPSERVERS
+    displayName: Bootstrap Servers
+    description: The uri of the Kafka bootstrap servers
+    required: true
+  - name: SASL_MECHANISM
+    displayName: SASL Mechanism
+    description: The SASL Mechanism used by Kafka. One of the following - GSSAPI, PLAIN, SCRAM-SHA-256, SCRAM-SHA-512
+    required: true
+  - name: SECURITY_PROTOCOL
+    displayName: Security Protocol
+    description: The Security Protocol used by Kafka. One of the following - SASL_SSL, PLAIN, SASL_PLAINTEXT, SSL
+    required: true
