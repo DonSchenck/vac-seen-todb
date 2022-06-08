@@ -30,7 +30,6 @@ namespace vac_seen_todb
                 Console.WriteLine("Beginning to write Vaccination Events to permanent data store...");
                 DocumentStore docstore = DocumentStore.For(Environment.GetEnvironmentVariable("MARTEN_CONNECTION_STRING"));
 
-                bool cancelled = false;
                 CancellationTokenSource source = new CancellationTokenSource();
                 CancellationToken token = source.Token;
 
@@ -64,14 +63,11 @@ namespace vac_seen_todb
                 {
                     consumer.Subscribe("us");
                     int vaxcount = 0;
-                    while (!cancelled)
+                    bool isPartitionEOF = false;
+                    while (!isPartitionEOF)
                     {
                         var consumeResult = consumer.Consume(token);
                         if (consumeResult!=null) {
-                            if (consumeResult.IsPartitionEOF) {
-                                Console.WriteLine("End of messages for topic us");
-                                break;
-                            }
                             VaccinationEvent ve = JsonConvert.DeserializeObject<VaccinationEvent>(consumeResult.Message.Value);
                             Console.WriteLine("Message offset: {0}", consumeResult.Offset);
                             using (var session = docstore.LightweightSession())
@@ -81,6 +77,9 @@ namespace vac_seen_todb
                                 session.SaveChanges();
                             }
 
+                            if consumeResult.IsPartitionEOF {
+                                isPartitionEOF = true;
+                            }
                             vaxcount++;
                         }
                     }
