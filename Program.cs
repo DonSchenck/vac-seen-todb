@@ -77,7 +77,7 @@ namespace vac_seen_todb
                                 session.SaveChanges();
                             }
 
-                            if consumeResult.IsPartitionEOF {
+                            if (consumeResult.IsPartitionEOF) {
                                 isPartitionEOF = true;
                             }
                             vaxcount++;
