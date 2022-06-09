@@ -15,30 +15,19 @@ namespace vac_seen_todb
         static void Main(string[] args)
         {
             // Consume Kafka events and write them to Console
-            Console.WriteLine("vac-seen-todb started.");
-
+            Console.WriteLine("vac-seen-todb job started.");
             write_events();
-
         }
 
         static void write_events()
         {
-            //DocumentStore docstore = DocumentStore.For("Host=postgresql;Username=postgres;Password=7f986df431344327b52471df0142e520;");
             try
             {
-
                 Console.WriteLine("Beginning to write Vaccination Events to permanent data store...");
                 DocumentStore docstore = DocumentStore.For(Environment.GetEnvironmentVariable("MARTEN_CONNECTION_STRING"));
 
                 CancellationTokenSource source = new CancellationTokenSource();
                 CancellationToken token = source.Token;
-
-                Console.WriteLine("config.BootstrapServers: {0}", Environment.GetEnvironmentVariable("BOOTSTRAPSERVERS"));
-                Console.WriteLine("SECURITY_PROTOCOL ENV: {0}", Environment.GetEnvironmentVariable("SECURITY_PROTOCOL"));
-                Console.WriteLine("SASL_MECHANICM ENV: {0}", Environment.GetEnvironmentVariable("SASL_MECHANISM"));
-                Console.WriteLine("config.SaslUsername: {0}", Environment.GetEnvironmentVariable("CLIENT_ID"));
-                Console.WriteLine("config.SaslPassword: {0}", Environment.GetEnvironmentVariable("CLIENT_SECRET"));
-
 
                 ConsumerConfig config = new ConsumerConfig();
                 config.GroupId = "ustodb";
@@ -49,7 +38,6 @@ namespace vac_seen_todb
                 config.SaslUsername = Environment.GetEnvironmentVariable("CLIENT_ID");
                 config.SaslPassword = Environment.GetEnvironmentVariable("CLIENT_SECRET");
 
-
                 Console.WriteLine("config.GroupId: {0}", config.GroupId);
                 Console.WriteLine("config.BootstrapServers: {0}", config.BootstrapServers);
                 Console.WriteLine("SASL_PROTOCOL ENV: {0}", Environment.GetEnvironmentVariable("SECURITY_PROTOCOL"));
@@ -57,36 +45,27 @@ namespace vac_seen_todb
                 Console.WriteLine("config.SaslUsername: {0}", config.SaslUsername);
                 Console.WriteLine("config.SaslPassword: {0}", config.SaslPassword);
 
-
-
                 using (var consumer = new ConsumerBuilder<Ignore, string>(config).Build())
                 {
                     consumer.Subscribe("us");
                     int vaxcount = 0;
-                    bool isPartitionEOF = false;
-                    while (!isPartitionEOF)
+                    while (true)
                     {
                         var consumeResult = consumer.Consume(token);
                         if (consumeResult!=null) {
                             VaccinationEvent ve = JsonConvert.DeserializeObject<VaccinationEvent>(consumeResult.Message.Value);
-                            Console.WriteLine("Message offset: {0}", consumeResult.Offset);
+                            // Log every 100th message
+                            if ((vaxcount % 100)==0) { Console.WriteLine("Message offset: {0}", consumeResult.Offset);}
                             using (var session = docstore.LightweightSession())
                             {
                                 // Write to database
                                 session.Store(ve);
                                 session.SaveChanges();
                             }
-
-                            if (consumeResult.IsPartitionEOF) {
-                                isPartitionEOF = true;
-                            }
                             vaxcount++;
                         }
                     }
-                    consumer.Close();
-                    Console.WriteLine("FINISHED writing Vaccination Events to permanent data store.");
-
-                }
+               }
             }
             catch (Exception e)
             {

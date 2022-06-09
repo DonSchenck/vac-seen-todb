@@ -202,4 +202,4 @@ Use PostgreSQL commands to see the raw data.
 
 `oc get pods -l name=postgresql`  
 
-`oc exec -it postgresql-1-brr7z -- /usr/bin/psql -U postgres -d postgres -c 'select * from mt_doc_vaccinationevent'`
+`oc exec -it postgresql-1-brr7z -- /usr/bin/psql -U postgres -d postgres -c 'select count(*) from mt_doc_vaccinationevent'`
