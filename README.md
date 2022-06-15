@@ -199,7 +199,8 @@ Use the following command to create the job template:
 
 # Observe the results
 Use PostgreSQL commands to see the raw data.  
+### PowerShell  
+`oc exec -it $(oc get pods | findstr -i postgresql).split()[0] -- /usr/bin/psql -U postgres -d postgres -c 'select count(*) from mt_doc_vaccinationevent'`
 
-`oc get pods -l name=postgresql`  
-
-`oc exec -it postgresql-1-brr7z -- /usr/bin/psql -U postgres -d postgres -c 'select count(*) from mt_doc_vaccinationevent'`
+### Bash
+`set -- $(oc get pods) | oc exec -it $1 -- /usr/bin/psql -U postgres -d postgres -c 'select count(*) from mt_doc_vaccinationevent'`
