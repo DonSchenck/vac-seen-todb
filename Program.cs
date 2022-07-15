@@ -62,12 +62,12 @@ namespace vac_seen_todb
                             {
                                 // Write to database
                                 session.Store(ve);
-                                session.SaveChangesAsync();
+                                session.SaveChanges();
                             }
                             vaxcount++;
                         }
                     }
-//                    consumer.Close();
+                    consumer.Close();
                }
             }
             catch (Exception e)
