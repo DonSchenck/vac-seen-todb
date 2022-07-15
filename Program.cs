@@ -67,7 +67,7 @@ namespace vac_seen_todb
                             vaxcount++;
                         }
                     }
-                    consumer.Close();
+//                    consumer.Close();
                }
             }
             catch (Exception e)
