@@ -26,7 +26,6 @@ namespace vac_seen_todb
                 Console.WriteLine("Beginning to write Vaccination Events to permanent data store...");
                 DocumentStore docstore = DocumentStore.For(Environment.GetEnvironmentVariable("MARTEN_CONNECTION_STRING"));
 
-
                 ConsumerConfig config = new ConsumerConfig();
                 config.GroupId = "ustodb";
                 config.AutoOffsetReset = AutoOffsetReset.Earliest;
@@ -56,12 +55,12 @@ namespace vac_seen_todb
                         var consumeResult = consumer.Consume(cancellationToken);
                         if (consumeResult!=null) {
                             VaccinationEvent ve = JsonConvert.DeserializeObject<VaccinationEvent>(consumeResult.Message.Value);
-                            // Log every 100th message
-                            if ((vaxcount % 100)==0) { Console.WriteLine("Message offset: {0}", consumeResult.Offset);}
+                            // Log every 3rd message
+                            if ((vaxcount % 3)==0) { Console.WriteLine("Message offset: {0}", consumeResult.Offset);}
                             using (var session = docstore.LightweightSession())
                             {
                                 // Write to database
-                                session.Store(ve);
+                                session.Insert(ve);
                                 session.SaveChanges();
                             }
                             vaxcount++;
