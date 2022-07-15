@@ -66,6 +66,7 @@ namespace vac_seen_todb
                             }
                             vaxcount++;
                         }
+                        Thread.Sleep(10000);
                     }
                     consumer.Close();
                }
