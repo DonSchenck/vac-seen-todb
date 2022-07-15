@@ -26,12 +26,10 @@ namespace vac_seen_todb
                 Console.WriteLine("Beginning to write Vaccination Events to permanent data store...");
                 DocumentStore docstore = DocumentStore.For(Environment.GetEnvironmentVariable("MARTEN_CONNECTION_STRING"));
 
-                CancellationTokenSource source = new CancellationTokenSource();
-                CancellationToken token = source.Token;
 
                 ConsumerConfig config = new ConsumerConfig();
                 config.GroupId = "ustodb";
-                config.AutoOffsetReset = AutoOffsetReset.Latest;
+                config.AutoOffsetReset = AutoOffsetReset.Earliest;
                 config.BootstrapServers = Environment.GetEnvironmentVariable("BOOTSTRAPSERVERS");
                 config.SecurityProtocol = ToSecurityProtocol(Environment.GetEnvironmentVariable("SECURITY_PROTOCOL"));
                 config.SaslMechanism = ToSaslMechanism(Environment.GetEnvironmentVariable("SASL_MECHANISM"));
@@ -45,13 +43,17 @@ namespace vac_seen_todb
                 Console.WriteLine("config.SaslUsername: {0}", config.SaslUsername);
                 Console.WriteLine("config.SaslPassword: {0}", config.SaslPassword);
 
+                CancellationTokenSource source = new CancellationTokenSource();
+                CancellationToken cancellationToken = source.Token;
                 using (var consumer = new ConsumerBuilder<Ignore, string>(config).Build())
                 {
                     consumer.Subscribe("us");
                     int vaxcount = 0;
-                    while (true)
+                    bool cancelled=false;
+
+                    while (!cancelled)
                     {
-                        var consumeResult = consumer.Consume(token);
+                        var consumeResult = consumer.Consume(cancellationToken);
                         if (consumeResult!=null) {
                             VaccinationEvent ve = JsonConvert.DeserializeObject<VaccinationEvent>(consumeResult.Message.Value);
                             // Log every 100th message
@@ -65,6 +67,7 @@ namespace vac_seen_todb
                             vaxcount++;
                         }
                     }
+                    consumer.Close();
                }
             }
             catch (Exception e)

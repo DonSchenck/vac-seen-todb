@@ -203,4 +203,4 @@ Use PostgreSQL commands to see the raw data.
 `oc exec -it $(oc get pods | findstr -i postgresql).split()[0] -- /usr/bin/psql -U postgres -d postgres -c 'select count(*) from mt_doc_vaccinationevent'`
 
 ### Bash
-`set -- $(oc get pods) | oc exec -it $1 -- /usr/bin/psql -U postgres -d postgres -c 'select count(*) from mt_doc_vaccinationevent'`
+`set -- $(oc get pods -l name=postgresql) | oc exec -it $1 -- /usr/bin/psql -U postgres -d postgres -c 'select count(*) from mt_doc_vaccinationevent'`
