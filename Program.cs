@@ -62,7 +62,7 @@ namespace vac_seen_todb
                             {
                                 // Write to database
                                 session.Store(ve);
-                                session.SaveChanges();
+                                session.SaveChangesAsync();
                             }
                             vaxcount++;
                         }
@@ -73,6 +73,9 @@ namespace vac_seen_todb
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+            } finally
+            {
+
             }
         }
         public static SecurityProtocol ToSecurityProtocol(string bindingValue) => bindingValue switch
