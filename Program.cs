@@ -55,8 +55,8 @@ namespace vac_seen_todb
                         var consumeResult = consumer.Consume(cancellationToken);
                         if (consumeResult!=null) {
                             VaccinationEvent ve = JsonConvert.DeserializeObject<VaccinationEvent>(consumeResult.Message.Value);
-                            // Log every 3rd message
-                            if ((vaxcount % 3)==0) { Console.WriteLine("Message offset: {0}", consumeResult.Offset);}
+                            // Log every 10th message
+                            if ((vaxcount % 10)==0) { Console.WriteLine("Message offset: {0}", consumeResult.Offset);}
                             using (var session = docstore.LightweightSession())
                             {
                                 // Write to database
@@ -64,8 +64,10 @@ namespace vac_seen_todb
                                 session.SaveChanges();
                             }
                             vaxcount++;
+                        } else
+                        {
+                            Thread.Sleep(10000);
                         }
-                        Thread.Sleep(10000);
                     }
                     consumer.Close();
                }
