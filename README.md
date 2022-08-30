@@ -1,13 +1,22 @@
 # vac-seen-todb
 Subscribes to "Vaccination" events in Kafka and persists them to a PostgreSQL database using Marten ([https://martendb.io/](https://martendb.io/)).
 
-This is Part Two (of four) of the C#, Kafka and OpenShift activity.
-
-This project requires that the Vaccination Event Generator project has first been implemented.  Here is a list of the prerequisites and/or requirements for this (vac-seen-todb) project: 
+This is Part XXX (of YYY) of the C#, Kafka and OpenShift "vas-seen" system.
 
 ## Prerequisites and Requirements  
+* You will need access to the command line, either Bash or PowerShell  
+* You will need access to a web browser
 * `oc` command line tool must be installed  
-* Access to Developer Sandbox for Red Hat OpenShift
+* You must have access to Red Hat OpenShift Sandbox
+* The "vac-seen-db" project at https://github.com/donschenck/vac-seen-db must be completed.
+* The "vac-seen-event-store project at https://github.com/donschenck/vac-seen-event-store must be completed.
+* The "vac-seen-managed-kafka" project at https://github.com/donschenck/vac-seen-managed-kafka must be completed.
+* The "vac-seen-web" project at https://github.com/donschenck/vac-seen-web must be completed.
+
+
+## Need help?
+If you need help or get stuck, email devsandbox@redhat.com.
+If you find a defect, [create an Issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue) in this repository.
 
 ## Create PostgreSQL instance
 
