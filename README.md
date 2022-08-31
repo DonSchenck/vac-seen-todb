@@ -26,3 +26,6 @@ If you have not already completed Parts 1-5, you must do that in order to have e
 This application's image is built and can be located at quay.io/donschenck/vac-seen-todb:latest.
 
 Use that image to build the application in your OpenShift dashboard using the Container Images option.
+
+![Add a application by using an existing container image](/images/add_Container_images.png)  
+![Supply the image name and click the creat button](/images/deploy_image_image_name.png)
