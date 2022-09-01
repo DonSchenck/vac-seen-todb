@@ -1,7 +1,7 @@
 # vac-seen-todb
 Subscribes to "Vaccination" events in Kafka and persists them to a PostgreSQL database using Marten ([https://martendb.io/](https://martendb.io/)).
 
-This is Part Six (of eight) of the C#, Kafka and OpenShift "vas-seen" system.
+This is Part Six (of eight) of the C#, Kafka and OpenShift "vac-seen" system.
 
 ## Prerequisites and Requirements  
 * You will need access to the command line, either Bash or PowerShell  
@@ -20,13 +20,21 @@ If you need help or get stuck, email devsandbox@redhat.com.
 If you find a defect, [create an Issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue) in this repository.
 
 # Make sure events have been created
-If you have not already completed Parts 1-5, you must do that in order to have events available in your Kafka instance to be processed by this activity.
+If you have not already completed Parts 1-5 of the vac-seen system, you must do that in order to have events available in your Kafka instance to be processed by this activity.
 
 # Create the application
 This application is created as an OpenShift Job.
 
-To create the job, run the following command:  
+## Step 1: Create the job template
+To create the job template, run the following command:  
+`oc create -f vac-seen-todb-job-template.yaml`  
 
+## Step 2: Create the Secret
+The job uses a Secret object to connect to the database. Create the Secret by running the following command:  
+`oc create -f vac-seen-todb-connection-string-secret.yaml`  
+
+## Step 3: Create the job
+Finally, create the job:  
 If using Bash, run:  
 `./create-job.sh`
 
