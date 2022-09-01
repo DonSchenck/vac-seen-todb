@@ -23,9 +23,13 @@ If you find a defect, [create an Issue](https://docs.github.com/en/issues/tracki
 If you have not already completed Parts 1-5, you must do that in order to have events available in your Kafka instance to be processed by this activity.
 
 # Create the application
-This application's image is built and can be located at quay.io/donschenck/vac-seen-todb:latest.
+This application is created as an OpenShift Job.
 
-Use that image to build the application in your OpenShift dashboard using the Container Images option.
+To create the job, run the following command:  
 
-![Add a application by using an existing container image](/images/add_Container_images.png)  
-![Supply the image name and click the creat button](/images/deploy_image_image_name.png)
+If using Bash, run:  
+`./create-job.sh`
+
+If using PowerShell, run:  
+`./create-job.ps1` 
+
